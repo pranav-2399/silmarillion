@@ -1,0 +1,3 @@
+-- database: ../cricket.db
+
+SELECT SUM(Runs_scored) FROM DELIVERY_OUTCOME_EXTRAS;

@@ -4,22 +4,32 @@ import { TABLES } from '../../data/schema';
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 function isNumericCol(col, rows) {
+  if (!rows || rows.length === 0) return false;
   return rows.slice(0, 20).every(r => r[col] === null || r[col] === undefined || !isNaN(Number(r[col])));
 }
 
 function fmt(val) {
   if (val === null || val === undefined) return <span className="cell--null">—</span>;
-  if (val === true  || val === 1)  return <span className="cell--bool cell--true">true</span>;
-  if (val === false || val === 0)  return <span className="cell--bool cell--false">false</span>;
+
+  if (typeof val === 'number') {
+    // Round to 2 decimals if it's not an integer
+    const display = Number.isInteger(val) ? val.toString() : val.toFixed(2);
+    return display;
+  }
+
+  // Booleans (actual)
+  if (val === true) return <span className="cell--bool cell--true">true</span>;
+  if (val === false) return <span className="cell--bool cell--false">false</span>;
+
   return String(val);
 }
 
 // ─── Pagination bar ───────────────────────────────────────────────────────────
 function PaginationBar({ page, limit, total, onPage, onLimit }) {
   const totalPages = Math.ceil(total / limit) || 1;
-  const pages      = [];
-  const start      = Math.max(1, page - 2);
-  const end        = Math.min(totalPages, page + 2);
+  const pages = [];
+  const start = Math.max(1, page - 2);
+  const end = Math.min(totalPages, page + 2);
   for (let i = start; i <= end; i++) pages.push(i);
 
   return (
@@ -55,53 +65,29 @@ function PaginationBar({ page, limit, total, onPage, onLimit }) {
 }
 
 // ─── Main ResultTable ─────────────────────────────────────────────────────────
-export default function ResultTable({ result, loading, error, pagination, setPage, setLimit }) {
-  const [colSort,   setColSort]   = useState({ col: null, dir: 'ASC' });
+export default function ResultTable({
+  result, loading, error,
+  pagination, setPage, setLimit,
+  onReorder, onHide, onShow, hiddenFields
+}) {
+  const [colSort, setColSort] = useState({ col: null, dir: 'ASC' });
   const [colFilter, setColFilter] = useState({});   // { colName: string }
   const [showPayload, setShowPayload] = useState(false);
+  const [showHiddenList, setShowHiddenList] = useState(false);
 
-  if (loading) {
-    return (
-      <section className="panel result-loading">
-        <div className="spinner" />
-        <p>Executing query…</p>
-      </section>
-    );
-  }
+  // Extract data with defaults
+  const {
+    rows: rawRows = [],
+    total = 0,
+    columns = [],
+    query_time_ms = null
+  } = result || {};
 
-  if (error) {
-    return (
-      <section className="panel result-error">
-        <div className="panel-header">
-          <span className="panel-icon">⚠</span>
-          <h2 className="panel-title">Query Error</h2>
-        </div>
-        <pre className="error-msg">{error}</pre>
-      </section>
-    );
-  }
-
-  if (!result) {
-    return (
-      <section className="panel panel--empty result-empty">
-        <div className="result-empty__inner">
-          <div className="result-empty__icon">◈</div>
-          <p className="result-empty__title">No query executed yet</p>
-          <p className="result-empty__sub">Configure tables, fields and filters above, then hit <strong>Run Query</strong>.</p>
-        </div>
-      </section>
-    );
-  }
-
-  const { rows: rawRows, total, columns, query_time_ms } = result;
-
-  // Detect numeric columns for highlighting
   const numericCols = useMemo(
     () => new Set(columns.filter(c => isNumericCol(c, rawRows))),
     [columns, rawRows]
   );
 
-  // Inline column filter
   const filteredRows = useMemo(() => {
     let rows = rawRows;
     Object.entries(colFilter).forEach(([col, val]) => {
@@ -114,7 +100,6 @@ export default function ResultTable({ result, loading, error, pagination, setPag
     return rows;
   }, [rawRows, colFilter]);
 
-  // Client-side column sort
   const sortedRows = useMemo(() => {
     if (!colSort.col) return filteredRows;
     return [...filteredRows].sort((a, b) => {
@@ -126,6 +111,39 @@ export default function ResultTable({ result, loading, error, pagination, setPag
       return colSort.dir === 'ASC' ? cmp : -cmp;
     });
   }, [filteredRows, colSort]);
+
+  if (loading) {
+    return (
+      <section className="panel result-loading">
+        <div className="spinner" />
+        <p>Executing analysis…</p>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="panel result-error">
+        <div className="panel-header">
+          <span className="panel-icon">⚠</span>
+          <h2 className="panel-title">Analysis Error</h2>
+        </div>
+        <pre className="error-msg">{error}</pre>
+      </section>
+    );
+  }
+
+  if (!result) {
+    return (
+      <section className="panel panel--empty result-empty">
+        <div className="result-empty__inner">
+          <div className="result-empty__icon">📊</div>
+          <p className="result-empty__title">No analysis performed yet</p>
+          <p className="result-empty__sub">Configure filters above and hit <strong>Run Analysis</strong> to see situational metrics.</p>
+        </div>
+      </section>
+    );
+  }
 
   const handleColSort = (col) => {
     setColSort(prev =>
@@ -150,40 +168,30 @@ export default function ResultTable({ result, loading, error, pagination, setPag
       <div className="result-header">
         <div className="result-header__left">
           <span className="panel-icon">◈</span>
-          <h2 className="panel-title">Results</h2>
+          <h2 className="panel-title">Situational Analysis</h2>
           <span className="panel-badge">{total.toLocaleString()} rows</span>
-          {query_time_ms != null && (
-            <span className="panel-badge panel-badge--dim">{query_time_ms}ms</span>
-          )}
         </div>
         <div className="result-header__right">
-          <button
-            className="action-btn"
-            onClick={() => setShowPayload(p => !p)}
-          >
-            {showPayload ? 'Hide' : 'Show'} API payload
-          </button>
-          <button
-            className="action-btn"
-            onClick={() => downloadCSV(columns, sortedRows)}
-          >
-            ↓ CSV
-          </button>
-          <button
-            className="action-btn"
-            onClick={() => downloadExcel(columns, sortedRows)}
-          >
-            ↓ Excel
-          </button>
+          {hiddenFields.length > 0 && (
+            <div className="restore-hidden-container">
+              <button className="action-btn action-btn--dim" onClick={() => setShowHiddenList(!showHiddenList)}>
+                👁 {hiddenFields.length} Hidden
+              </button>
+              {showHiddenList && (
+                <div className="hidden-fields-popup">
+                  {hiddenFields.map(f => (
+                    <button key={f} className="hidden-field-item" onClick={() => onShow(f)}>
+                      + {f.replace(/_/g, ' ')}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+          <button className="action-btn" onClick={() => downloadCSV(columns, sortedRows)}>↓ CSV</button>
+          <button className="action-btn" onClick={() => downloadExcel(columns, sortedRows)}>↓ Excel</button>
         </div>
       </div>
-
-      {/* API payload inspector */}
-      {showPayload && (
-        <pre className="payload-inspector">
-          {JSON.stringify(result._payload || { columns, total }, null, 2)}
-        </pre>
-      )}
 
       {/* Table */}
       <div className="table-wrapper">
@@ -191,25 +199,49 @@ export default function ResultTable({ result, loading, error, pagination, setPag
           <thead>
             {/* Column headers */}
             <tr>
-              <th className="result-table__th result-table__th--idx">#</th>
-              {columns.map(col => (
-                <th
-                  key={col}
-                  className={`result-table__th ${numericCols.has(col) ? 'result-table__th--num' : ''}`}
-                  onClick={() => handleColSort(col)}
-                >
-                  <span className="th-inner">
-                    {col.replace(/_/g, ' ')}
-                    {sortIcon(col)}
-                  </span>
-                </th>
-              ))}
+              <th className="result-table__th result-table__th--idx sticky-col-1">#</th>
+              {columns.map((col, idx) => {
+                const isNameCol = col === 'Player_name';
+                return (
+                  <th
+                    key={col}
+                    className={`result-table__th ${numericCols.has(col) ? 'result-table__th--num' : ''} ${isNameCol ? 'sticky-col-2' : ''}`}
+                    onClick={() => handleColSort(col)}
+                  >
+                    <div className="th-container">
+                      <div className="th-reorder">
+                        <button
+                          className="reorder-btn"
+                          disabled={idx === 0}
+                          onClick={(e) => { e.stopPropagation(); onReorder(idx, idx - 1); }}
+                          title="Move Left"
+                        >←</button>
+                        <button
+                          className="reorder-btn"
+                          disabled={idx === columns.length - 1}
+                          onClick={(e) => { e.stopPropagation(); onReorder(idx, idx + 1); }}
+                          title="Move Right"
+                        >→</button>
+                        <button
+                          className="reorder-btn reorder-btn--remove"
+                          onClick={(e) => { e.stopPropagation(); onHide(col); }}
+                          title="Remove Column"
+                        >✕</button>
+                      </div>
+                      <span className="th-inner">
+                        {col.replace(/_/g, ' ')}
+                        {sortIcon(col)}
+                      </span>
+                    </div>
+                  </th>
+                );
+              })}
             </tr>
             {/* Inline filter row */}
             <tr className="filter-header-row">
-              <th />
-              {columns.map(col => (
-                <th key={col} className="filter-header-cell">
+              <th className="sticky-col-1" />
+              {columns.map((col) => (
+                <th key={col} className={`filter-header-cell ${col === 'Player_name' ? 'sticky-col-2' : ''}`}>
                   <input
                     className="col-filter-input"
                     placeholder="filter…"
@@ -224,31 +256,23 @@ export default function ResultTable({ result, loading, error, pagination, setPag
           <tbody>
             {sortedRows.map((row, ri) => (
               <tr key={ri} className={ri % 2 === 0 ? 'row--even' : 'row--odd'}>
-                <td className="result-table__td result-table__td--idx">
+                <td className="result-table__td result-table__td--idx sticky-col-1">
                   {(pagination.page - 1) * pagination.limit + ri + 1}
                 </td>
                 {columns.map(col => (
                   <td
                     key={col}
-                    className={`result-table__td ${numericCols.has(col) ? 'result-table__td--num' : ''}`}
+                    className={`result-table__td ${numericCols.has(col) ? 'result-table__td--num' : ''} ${col === 'Player_name' ? 'sticky-col-2' : ''}`}
                   >
                     {fmt(row[col])}
                   </td>
                 ))}
               </tr>
             ))}
-            {sortedRows.length === 0 && (
-              <tr>
-                <td colSpan={columns.length + 1} className="result-table__empty">
-                  No rows match the inline filter.
-                </td>
-              </tr>
-            )}
           </tbody>
         </table>
       </div>
 
-      {/* Pagination */}
       <PaginationBar
         page={pagination.page}
         limit={pagination.limit}

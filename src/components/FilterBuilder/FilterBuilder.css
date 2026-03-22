@@ -1,0 +1,191 @@
+/* ─── FilterBuilder.css ─────────────────────────────────────────────────────── */
+
+/* ── Filter rows ── */
+.filter-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: var(--bg-panel2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.75rem;
+  flex-wrap: wrap;
+}
+
+.filter-row__source {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 180px;
+}
+
+.filter-row__table-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.filter-row__table {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+}
+
+.filter-row__field {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-primary);
+}
+
+.filter-row__value {
+  flex: 1;
+}
+
+.filter-input {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 4px 8px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-primary);
+  outline: none;
+  width: 100%;
+  transition: border-color var(--transition);
+}
+
+.filter-input:focus {
+  border-color: var(--amber);
+}
+
+.filter-input--op {
+  width: 90px;
+  flex-shrink: 0;
+}
+
+.filter-between {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.filter-between__sep {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+
+/* ── Add Filter section ── */
+.add-filter-details {
+  margin-top: 0.5rem;
+}
+
+.add-filter-summary {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  user-select: none;
+  padding: 0.3rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.add-filter-summary:hover {
+  color: var(--amber);
+}
+
+.add-filter-container {
+  padding: 1.5rem;
+  background: var(--bg-panel2);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+.add-filter-search {
+  margin-bottom: 2rem;
+}
+
+.filter-search-input {
+  width: 100%;
+  padding: 0.8rem 1.2rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  color: #fff;
+  transition: all 0.2s ease;
+}
+
+.filter-search-input:focus {
+  border-color: var(--amber);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+}
+
+.add-filter-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.filter-group__title {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.4rem;
+  margin: 0;
+}
+
+.filter-group__fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.add-filter-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.9rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.add-filter-chip:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: var(--amber);
+  transform: translateY(-1px);
+}
+
+.add-filter-chip__count {
+  background: var(--amber);
+  color: #0d1117;
+  padding: 1px 5px;
+  border-radius: 99px;
+  font-size: 0.7rem;
+}

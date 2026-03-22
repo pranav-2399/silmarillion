@@ -1,0 +1,158 @@
+/* ─── Panel (shared card container) ─────────────────────────────────────────── */
+.panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.5rem;
+  animation: fadeIn 0.2s ease both;
+}
+
+.panel--empty {
+  opacity: 0.6;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.panel-icon {
+  font-size: 0.85rem;
+  color: var(--amber);
+  font-family: var(--font-mono);
+}
+
+.panel-title {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  flex: 1;
+}
+
+.panel-badge {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  background: rgba(245, 158, 11, 0.12);
+  color: var(--amber);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: 20px;
+  padding: 1px 8px;
+  white-space: nowrap;
+}
+
+.panel-badge--dim {
+  background: rgba(139, 151, 176, 0.1);
+  color: var(--text-secondary);
+  border-color: var(--border);
+}
+
+.empty-hint {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+/* ─── Common Buttons ────────────────────────────────────────────────────────── */
+.icon-btn {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  font-size: 0.75rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  transition: all var(--transition);
+  flex-shrink: 0;
+}
+
+.icon-btn:hover {
+  border-color: var(--amber);
+  color: var(--text-primary);
+}
+
+.icon-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.icon-btn--danger:hover {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+.action-btn {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  transition: all var(--transition);
+  white-space: nowrap;
+}
+
+.action-btn:hover {
+  border-color: var(--amber);
+  color: var(--amber);
+  background: rgba(245, 158, 11, 0.06);
+}
+
+.action-btn--danger {
+  color: var(--red);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.action-btn--danger:hover {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: var(--red);
+}
+
+.action-btn--ghost {
+  border-color: transparent;
+}
+
+.action-btn--dim {
+  opacity: 0.7;
+}
+
+/* ─── Type Badges ────────────────────────────────────────────────────────────── */
+.type-badge {
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  font-weight: 600;
+  border-radius: 3px;
+  padding: 1px 4px;
+  letter-spacing: 0.05em;
+}
+
+.badge--str {
+  background: rgba(139, 92, 246, 0.2);
+  color: #a78bfa;
+}
+
+.badge--num {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--green);
+}
+
+.badge--bool {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--amber);
+}
+
+.badge--date {
+  background: rgba(59, 130, 246, 0.15);
+  color: var(--blue);
+}
+
+.badge--enum {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+}

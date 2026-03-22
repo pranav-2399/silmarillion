@@ -1,0 +1,117 @@
+/* ─── QueryBar.css ──────────────────────────────────────────────────────────── */
+.query-bar {
+  position: sticky;
+  bottom: 0;
+  z-index: 50;
+  background: rgba(22, 27, 34, 0.96);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 0.85rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  box-shadow: 0 -4px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(245, 158, 11, 0.08);
+}
+
+.query-bar__left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.query-bar__right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.query-stats {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.query-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 0.25rem;
+}
+
+.query-stat__val {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--amber);
+}
+
+.query-stat__lbl {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--text-dim);
+}
+
+.query-stat__sep {
+  color: var(--border);
+  font-size: 0.9rem;
+}
+
+.validation-issues {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.validation-issue {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.08);
+  border: 1px solid rgba(251, 191, 36, 0.2);
+  border-radius: var(--radius-sm);
+  padding: 2px 8px;
+}
+
+.run-btn {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 8px 22px;
+  border-radius: var(--radius);
+  background: var(--amber);
+  color: #0d1117;
+  transition: all var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.25);
+}
+
+.run-btn:hover:not(:disabled) {
+  background: var(--amber-d);
+  box-shadow: 0 0 30px rgba(245, 158, 11, 0.4);
+  transform: translateY(-1px);
+}
+
+.run-btn--disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.run-btn--loading {
+  opacity: 0.7;
+}
+
+.btn-spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(0, 0, 0, 0.3);
+  border-top-color: #0d1117;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}

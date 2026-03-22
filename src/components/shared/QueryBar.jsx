@@ -2,20 +2,20 @@ import { buildQueryPayload } from '../../utils/api';
 import { useState } from 'react';
 
 export default function QueryBar({
-  tables, fields, filters, sort, pagination,
+  tables = [], fields = [], filters = [], sort = [], pagination = {},
   loading, onRun, onReset,
 }) {
   const [showJSON, setShowJSON] = useState(false);
 
   const payload = buildQueryPayload({ tables, fields, filters, sort, pagination });
-  const canRun  = tables.length > 0;
+  const canRun = tables.length > 0;
 
   const validationIssues = [];
   if (tables.length === 0) validationIssues.push('Select at least one data source.');
 
   // Runner_team_id ≠ Winner_team_id guard (Tournament table)
-  const winnerFilter  = filters.find(f => f.table === 'Tournament' && f.field === 'Winner_team_id');
-  const runnerFilter  = filters.find(f => f.table === 'Tournament' && f.field === 'Runner_team_id');
+  const winnerFilter = filters.find(f => f.table === 'Tournament' && f.field === 'Winner_team_id');
+  const runnerFilter = filters.find(f => f.table === 'Tournament' && f.field === 'Runner_team_id');
   if (
     winnerFilter && runnerFilter &&
     winnerFilter.op === '=' && runnerFilter.op === '=' &&

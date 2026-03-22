@@ -46,22 +46,23 @@ async function apiFetch(path, options = {}) {
  *   - Building parameterised SQL (NEVER string-interpolate user values)
  *   - Returning { rows: [...], total: number, columns: [...] }
  */
-export function buildQueryPayload({ tables, fields, filters, sort, pagination }) {
+export function buildQueryPayload({ tables = [], fields = [], filters = [], sort = [], pagination = {}, aggregate = false }) {
   return {
     tables,
-    fields:  fields.map(f => ({ table: f.table, field: f.field })),
+    fields: fields.map(f => ({ table: f.table, field: f.field })),
     filters: filters.map(f => ({
-      table:   f.table,
-      field:   f.field,
-      op:      f.op,
-      value:   f.value,
+      table: f.table,
+      field: f.field,
+      op: f.op,
+      value: f.value,
       ...(f.op === 'BETWEEN' ? { valueTo: f.valueTo } : {}),
     })),
     sort: sort.map(s => ({ table: s.table, field: s.field, dir: s.dir })),
     pagination: {
-      page:  pagination.page  ?? 1,
+      page: pagination.page ?? 1,
       limit: pagination.limit ?? 100,
     },
+    aggregate
   };
 }
 
@@ -75,13 +76,23 @@ export async function executeQuery(queryState) {
   const payload = buildQueryPayload(queryState);
   return apiFetch('/api/query', {
     method: 'POST',
-    body:   JSON.stringify(payload),
+    body: JSON.stringify(payload),
   });
 }
 
 /**
- * Fetch distinct values for a field (used for autocomplete / live filter).
+ * Fetch distinct values for a field, considering current filter context.
  * @returns {{ values: (string|number)[] }}
+ */
+export async function fetchContextualValues(table, field, filters = []) {
+  return apiFetch('/api/values', {
+    method: 'POST',
+    body: JSON.stringify({ table, field, filters }),
+  });
+}
+
+/**
+ * Fetch distinct values for a field (legacy simplicity).
  */
 export async function fetchDistinctValues(table, field) {
   return apiFetch(`/api/tables/${table}/values?field=${encodeURIComponent(field)}`);
@@ -110,7 +121,7 @@ export async function ping() {
  */
 export function rowsToCSV(columns, rows) {
   const header = columns.join(',');
-  const lines  = rows.map(row =>
+  const lines = rows.map(row =>
     columns.map(col => {
       const v = row[col] ?? '';
       const s = String(v);
@@ -123,11 +134,11 @@ export function rowsToCSV(columns, rows) {
 }
 
 export function downloadCSV(columns, rows, filename = 'cricket_query_result.csv') {
-  const csv   = rowsToCSV(columns, rows);
-  const blob  = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const url   = URL.createObjectURL(blob);
-  const link  = document.createElement('a');
-  link.href     = url;
+  const csv = rowsToCSV(columns, rows);
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
   link.download = filename;
   link.click();
   URL.revokeObjectURL(url);
@@ -139,10 +150,10 @@ export function downloadCSV(columns, rows, filename = 'cricket_query_result.csv'
  */
 export async function downloadExcel(columns, rows, filename = 'cricket_query_result.xlsx') {
   const XLSX = await import('xlsx');
-  const ws   = XLSX.utils.json_to_sheet(rows.map(row =>
+  const ws = XLSX.utils.json_to_sheet(rows.map(row =>
     Object.fromEntries(columns.map(c => [c, row[c] ?? '']))
   ));
-  const wb   = XLSX.utils.book_new();
+  const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Results');
   XLSX.writeFile(wb, filename);
 }

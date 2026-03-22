@@ -1,73 +1,74 @@
-import TableSelector  from './components/TableSelector/TableSelector';
-import FieldSelector  from './components/FieldSelector/FieldSelector';
-import FilterBuilder  from './components/FilterBuilder/FilterBuilder';
-import SortOptions    from './components/SortOptions/SortOptions';
-import ResultTable    from './components/ResultTable/ResultTable';
-import QueryBar       from './components/shared/QueryBar';
+import TableSelector from './components/TableSelector/TableSelector';
+import FieldSelector from './components/FieldSelector/FieldSelector';
+import FilterBuilder from './components/FilterBuilder/FilterBuilder';
+import SortOptions from './components/SortOptions/SortOptions';
+import ResultTable from './components/ResultTable/ResultTable';
+import QueryBar from './components/shared/QueryBar';
 import { useQueryState } from './hooks/useQueryState';
+import { useState } from 'react';
 
 export default function App() {
   const q = useQueryState();
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   return (
     <div className="app">
-      {/* ── Header ─────────────────────────────────────────────────────── */}
       <header className="app-header">
-        <div className="app-header__logo">
-          <span>🏏</span>
-          <span>CricketDB</span>
-          <span className="app-header__logo-dot" />
+        <div className="app-header__titles">
+          <h1 className="app-header__title">Silmarillion</h1>
+          <p className="app-header__subtitle">Player Statistics Explorer</p>
         </div>
-        <span className="app-header__sub">Query Explorer</span>
-        <div className="app-header__spacer" />
-        <span className="app-header__db-tag">SQLite · Python backend</span>
+        <div className="app-header__actions">
+          <span className="app-header__db-tag">SQLite · Cricket DB</span>
+          <button
+            className={`action-btn ${showAdvanced ? 'action-btn--active' : ''}`}
+            onClick={() => setShowAdvanced(!showAdvanced)}
+          >
+            {showAdvanced ? 'Hide' : 'Show'} Advanced Sources
+          </button>
+          <button className="run-btn" onClick={q.runQuery} disabled={q.loading}>
+            {q.loading ? 'Running...' : 'Run Analysis'}
+          </button>
+        </div>
       </header>
 
-      {/* ── Main ───────────────────────────────────────────────────────── */}
       <main className="app-main">
+        <div className="analytics-tabs">
+          <div className="tabs-container">
+            <button
+              className={`tab-btn ${!q.aggregate ? 'tab-btn--active' : ''}`}
+              onClick={() => { q.setAggregate(false); q.clearFilters(); }}
+            >
+              📊 Career Stats
+            </button>
+            <button
+              className={`tab-btn ${q.aggregate ? 'tab-btn--active' : ''}`}
+              onClick={() => { q.setAggregate(true); q.clearFilters(); }}
+            >
+              🏏 Match-Specific
+            </button>
+          </div>
+          <div className="tab-explanation">
+            {!q.aggregate
+              ? "⚡ Showing pre-calculated career leaderboards"
+              : "🔬 Analyzing specific match situations ball-by-ball"}
+          </div>
+        </div>
 
-        {/* 1. Table selector */}
-        <TableSelector
-          selectedTables={q.tables}
-          onTablesChange={q.setTables}
-        />
+        <div className="query-grid">
+          <div className="query-grid__main">
+            <FilterBuilder
+              selectedTables={q.tables}
+              filters={q.filters}
+              addFilter={q.addFilter}
+              updateFilter={q.updateFilter}
+              removeFilter={q.removeFilter}
+              clearFilters={q.clearFilters}
+              aggregate={q.aggregate}
+            />
+          </div>
+        </div>
 
-        {/* 2. Field selector */}
-        {q.tables.length > 0 && (
-          <FieldSelector
-            selectedTables={q.tables}
-            isFieldSelected={q.isFieldSelected}
-            toggleField={q.toggleField}
-            selectAllFields={q.selectAllFields}
-            clearTableFields={q.clearTableFields}
-          />
-        )}
-
-        {/* 3. Filter builder */}
-        {q.tables.length > 0 && (
-          <FilterBuilder
-            selectedTables={q.tables}
-            filters={q.filters}
-            addFilter={q.addFilter}
-            updateFilter={q.updateFilter}
-            removeFilter={q.removeFilter}
-            clearFilters={q.clearFilters}
-          />
-        )}
-
-        {/* 4. Sort options */}
-        {q.tables.length > 0 && (
-          <SortOptions
-            selectedTables={q.tables}
-            sort={q.sort}
-            addSort={q.addSort}
-            updateSort={q.updateSort}
-            removeSort={q.removeSort}
-            reorderSort={q.reorderSort}
-          />
-        )}
-
-        {/* 5. Results */}
         <ResultTable
           result={q.result}
           loading={q.loading}
@@ -75,12 +76,16 @@ export default function App() {
           pagination={q.pagination}
           setPage={q.setPage}
           setLimit={q.setLimit}
+          onReorder={q.reorderField}
+          onHide={q.hideField}
+          onShow={q.showField}
+          hiddenFields={q.hiddenFields}
         />
 
         {/* 6. Sticky query bar */}
         <QueryBar
           tables={q.tables}
-          fields={q.fields}
+          fields={q.getDerivedFields()}
           filters={q.filters}
           sort={q.sort}
           pagination={q.pagination}
